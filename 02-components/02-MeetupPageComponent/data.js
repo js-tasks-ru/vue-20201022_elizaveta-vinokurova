@@ -23,6 +23,19 @@ export async function fetchMeetup(id) {
 }
 
 /**
+ * Вычисление отформатированной по заданному правилу даты
+ * @param date – дата для обработки
+ * @returns {string} - строка даты в заданном формате
+ */
+
+export function getDateOnlyString(date) {
+    const YYYY = date.getFullYear();
+    const MM = (date.getMonth() + 1).toString().padStart(2, '0');
+    const DD = date.getDate().toString().padStart(2, '0');
+    return `${YYYY}-${MM}-${DD}`;
+}
+
+/**
  * Словарь заголовков по умолчанию для всех типов элементов программы
  */
 export const agendaItemTitles = {
