@@ -1,6 +1,3 @@
-/*
-  Полезные функции по работе с датой можно описать вне Vue компонента
- */
 const getDay = (date) => { // получить номер дня недели, от 0 (пн) до 6 (вс)
     let day = date.getDay();
     if (day === 0) day = 7; // сделать воскресенье (0) последним днем
@@ -48,30 +45,22 @@ export const MeetupsCalendar = {
 
     data() {
         return {
-            currentDate: new Date(),
+            initialDate: new Date(new Date().setDate(1)),
             lastMonthDate: '',
         }
     },
 
     computed: {
-        currentYear() {
-            return new Date(this.currentDate).getFullYear();
-        },
-
         currentMonth() {
-            return new Date(this.currentDate).getMonth();
+            return new Date(this.initialDate).getMonth();
         },
 
         printDate() {
-            let month = new Date(this.currentDate).toLocaleString(navigator.language, {
+            let month = this.initialDate.toLocaleString(navigator.language, {
                 month: 'long',
             });
 
-            return `${month} ${this.currentYear}`;
-        },
-
-        initialDate() {
-            return new Date(this.currentYear, this.currentMonth);
+            return `${month} ${this.initialDate.getFullYear()}`;
         },
 
         initialWeekDay() {
@@ -89,13 +78,7 @@ export const MeetupsCalendar = {
                 // если без new Date, то initialDate тоже начинает меняться (Оо)
                 let lastDay = new Date(this.initialDate);
                 let day = new Date(lastDay.setDate(lastDay.getDate() - (this.initialWeekDay - i)));
-                let vm = this;
-                days.push({
-                    number: day.getDate(),
-                    date: day,
-                    isCurrentMonth: false,
-                    meetups: vm.addMeetups(day),
-                });
+                days.push(this.getOneCalendarDay(day));
             }
             return days;
         },
@@ -107,13 +90,7 @@ export const MeetupsCalendar = {
 
             while (currentDate.getMonth() === this.currentMonth) {
                 let day = new Date(currentDate);
-                let vm = this;
-                days.push({
-                    number: day.getDate(),
-                    date: day,
-                    isCurrentMonth: true,
-                    meetups: vm.addMeetups(day),
-                });
+                days.push(this.getOneCalendarDay(day));
                 currentDate.setDate(currentDate.getDate() + 1);
             }
             this.lastMonthDate = new Date(currentDate.setDate(currentDate.getDate() - 1));
@@ -126,13 +103,7 @@ export const MeetupsCalendar = {
             let nextDay = new Date(this.lastMonthDate);
             for (let i = this.lastWeekDay + 1; i < WEEK; i++) {
                 let day = new Date(nextDay.setDate(nextDay.getDate() + 1));
-                let vm = this;
-                days.push({
-                    number: day.getDate(),
-                    date: day,
-                    isCurrentMonth: false,
-                    meetups: vm.addMeetups(day),
-                });
+                days.push(this.getOneCalendarDay(day));
             }
             return days;
         },
@@ -151,6 +122,15 @@ export const MeetupsCalendar = {
     },
 
     methods: {
+        getOneCalendarDay(date) {
+            return {
+                number: date.getDate(),
+                date: date,
+                isCurrentMonth: date.getMonth() === this.initialDate.getMonth(),
+                meetups: this.addMeetups(date),
+            }
+        },
+
         addMeetups(date) {
             let meetups = [];
             this.actualMeetups.forEach(meetup => {
@@ -164,11 +144,11 @@ export const MeetupsCalendar = {
         },
 
         showPreviousMonth() {
-            this.currentDate = new Date(this.currentDate.setMonth(this.currentDate.getMonth() - 1));
+            this.initialDate = new Date(this.initialDate.setMonth(this.initialDate.getMonth() - 1));
         },
 
         showNextMonth() {
-            this.currentDate = new Date(this.currentDate.setMonth(this.currentDate.getMonth() + 1));
+            this.initialDate = new Date(this.initialDate.setMonth(this.initialDate.getMonth() + 1));
         },
     },
 };
