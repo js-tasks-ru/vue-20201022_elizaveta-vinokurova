@@ -7,21 +7,6 @@ const getDay = (date) => { // получить номер дня недели, �
     return day - 1;
 }
 
-const MONTHS = {
-    '0': 'Январь',
-    '1': 'Февраль',
-    '2': 'Март',
-    '3': 'Апрель',
-    '4': 'Май',
-    '5': 'Июнь',
-    '6': 'Июль',
-    '7': 'Август',
-    '8': 'Сентябрь',
-    '9': 'Октябрь',
-    '10': 'Ноябрь',
-    '11': 'Декабрь',
-}
-
 const WEEK = 7;
 
 export const MeetupsCalendar = {
@@ -38,38 +23,21 @@ export const MeetupsCalendar = {
                 </div>
               </div>
               <div class="rangepicker__date-grid">
-                <div class="rangepicker__cell rangepicker__cell_inactive"
-                    v-for="day in calendarDays"
-                >{{ day }}</div>
+                <div class="rangepicker__cell"
+                     v-for="day in calendarDays"
+                     :class="{ 'rangepicker__cell_inactive': !day.isCurrentMonth }"
+                     
+                >{{ day.number }}
+                    <template v-if="day.meetups && day.meetups.length > 0">
+                        <a class="rangepicker__event"
+                           v-for="meetup in day.meetups"
+                        >{{ meetup.title }}</a>                        
+                    </template>
+                </div>
               </div>
             </div>
         </div>
-        
-<!--        <div class="rangepicker">-->
-<!--            <div class="rangepicker__calendar">-->
-<!--              <div class="rangepicker__month-indicator">-->
-<!--                <div class="rangepicker__selector-controls">-->
-<!--                  <button class="rangepicker__selector-control-left"></button>-->
-<!--                  <div>Июнь 2020</div>-->
-<!--                  <button class="rangepicker__selector-control-right"></button>-->
-<!--                </div>-->
-<!--              </div>-->
-<!--              <div class="rangepicker__date-grid">-->
-<!--                <div class="rangepicker__cell rangepicker__cell_inactive">28</div>-->
-<!--                <div class="rangepicker__cell rangepicker__cell_inactive">29</div>-->
-<!--                <div class="rangepicker__cell rangepicker__cell_inactive">30</div>-->
-<!--                <div class="rangepicker__cell rangepicker__cell_inactive">31</div>-->
-<!--                <div class="rangepicker__cell">-->
-<!--                  1-->
-<!--                  <a class="rangepicker__event">Митап</a>-->
-<!--                  <a class="rangepicker__event">Митап</a>-->
-<!--                </div>-->
-<!--                <div class="rangepicker__cell">2</div>-->
-<!--                <div class="rangepicker__cell">3</div>-->
-<!--              </div>-->
-<!--            </div>-->
-<!--        </div>-->
-`,
+    `,
 
     props: {
         meetups: {
@@ -95,7 +63,11 @@ export const MeetupsCalendar = {
         },
 
         printDate() {
-            return `${MONTHS[this.currentMonth]} ${this.currentYear}`;
+            let month = new Date(this.currentDate).toLocaleString(navigator.language, {
+                month: 'long',
+            });
+
+            return `${month} ${this.currentYear}`;
         },
 
         initialDate() {
@@ -116,7 +88,14 @@ export const MeetupsCalendar = {
             for (let i = 0; i < this.initialWeekDay; i++) {
                 // если без new Date, то initialDate тоже начинает меняться (Оо)
                 let lastDay = new Date(this.initialDate);
-                days.push(new Date(lastDay.setDate(lastDay.getDate() - (this.initialWeekDay - i))).getDate());
+                let day = new Date(lastDay.setDate(lastDay.getDate() - (this.initialWeekDay - i)));
+                let vm = this;
+                days.push({
+                    number: day.getDate(),
+                    date: day,
+                    isCurrentMonth: false,
+                    meetups: vm.addMeetups(day),
+                });
             }
             return days;
         },
@@ -127,7 +106,14 @@ export const MeetupsCalendar = {
             let currentDate = new Date(this.initialDate);
 
             while (currentDate.getMonth() === this.currentMonth) {
-                days.push(new Date(currentDate).getDate());
+                let day = new Date(currentDate);
+                let vm = this;
+                days.push({
+                    number: day.getDate(),
+                    date: day,
+                    isCurrentMonth: true,
+                    meetups: vm.addMeetups(day),
+                });
                 currentDate.setDate(currentDate.getDate() + 1);
             }
             this.lastMonthDate = new Date(currentDate.setDate(currentDate.getDate() - 1));
@@ -139,17 +125,44 @@ export const MeetupsCalendar = {
             let days = [];
             let nextDay = new Date(this.lastMonthDate);
             for (let i = this.lastWeekDay + 1; i < WEEK; i++) {
-                days.push(new Date(nextDay.setDate(nextDay.getDate() + 1)).getDate());
+                let day = new Date(nextDay.setDate(nextDay.getDate() + 1));
+                let vm = this;
+                days.push({
+                    number: day.getDate(),
+                    date: day,
+                    isCurrentMonth: false,
+                    meetups: vm.addMeetups(day),
+                });
             }
             return days;
         },
 
         calendarDays() {
             return this.previousDays.concat(this.monthDays).concat(this.nextDays);
+        },
+
+        // TODO: доработать, сделать включение только тех митапов, которые попадают в крайние дни
+        actualMeetups() {
+            return this.meetups.filter(meetup => {
+                let meetupMonth = new Date(meetup.date).getMonth();
+                return  meetupMonth >= (this.currentMonth - 1) && meetupMonth <= (this.currentMonth + 1);
+            })
         }
     },
 
     methods: {
+        addMeetups(date) {
+            let meetups = [];
+            this.actualMeetups.forEach(meetup => {
+                let calendarDate = new Date(date);
+                let meetupDate = new Date(meetup.date);
+                if (calendarDate.toLocaleDateString() === meetupDate.toLocaleDateString()) {
+                    meetups.push(meetup);
+                }
+            });
+            return meetups;
+        },
+
         showPreviousMonth() {
             this.currentDate = new Date(this.currentDate.setMonth(this.currentDate.getMonth() - 1));
         },
@@ -158,8 +171,4 @@ export const MeetupsCalendar = {
             this.currentDate = new Date(this.currentDate.setMonth(this.currentDate.getMonth() + 1));
         },
     },
-
-    mounted() {
-
-    }
 };
