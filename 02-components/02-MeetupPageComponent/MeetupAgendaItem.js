@@ -1,23 +1,41 @@
+import {agendaItemIcons, agendaItemTitles} from "./data.js";
+
 export const MeetupAgendaItem = {
-  name: 'MeetupAgendaItem',
+    name: 'MeetupAgendaItem',
 
-  template: `<div class="meetup-agenda__item">
-      <div class="meetup-agenda__item-col">
-        <img class="icon" alt="icon" src="/assets/icons/icon-cal-sm.svg" />
-      </div>
-      <div class="meetup-agenda__item-col">00:00 - 00:00</div>
-      <div class="meetup-agenda__item-col">
-        <h5 class="meetup-agenda__title">Заголовок</h5>
-        <p>
-          <span>Докладчик</span>
-          <span class="meetup-agenda__dot"></span>
-          <span class="meetup-agenda__lang">ru</span>
-        </p>
-        <p>Описание</p>
-      </div>
-    </div>`,
+    template: `               
+        <div class="meetup-agenda__item">
+            <div class="meetup-agenda__item-col">
+                <img class="icon" alt="icon"
+                     :src="\`/assets/icons/icon-\${agendaItemProcessed.icon}.svg\`"/>
+            </div>
+            <div class="meetup-agenda__item-col">{{ \`\${agendaItemProcessed.startsAt} - \${agendaItemProcessed.endsAt}\` }}</div>
+            <div class="meetup-agenda__item-col">
+                <h5 class="meetup-agenda__title">{{ agendaItemProcessed.title }}</h5>
+                <p v-if="agendaItemProcessed.type === 'talk'">
+                    <span>{{ agendaItemProcessed.speaker }}</span>
+                    <span class="meetup-agenda__dot"></span>
+                    <span class="meetup-agenda__lang">{{ agendaItemProcessed.language }}</span>
+                </p>
+                <p v-if="agendaItemProcessed.description">{{ agendaItemProcessed.description }}</p>
+            </div>
+        </div>
+    `,
 
-  // props
+    props: {
+        agendaItem: {
+            type: Object,
+            required: true,
+        }
+    },
 
-  // Возможно, тут потребуется computed
+    computed: {
+        agendaItemProcessed() {
+            return {
+                ...this.agendaItem,
+                title: this.agendaItem.title || agendaItemTitles[this.agendaItem.type],
+                icon: agendaItemIcons[this.agendaItem.type] || 'cal-sm',
+            }
+        },
+    },
 };

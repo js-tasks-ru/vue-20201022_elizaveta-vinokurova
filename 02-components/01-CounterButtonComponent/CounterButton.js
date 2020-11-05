@@ -1,10 +1,33 @@
 export const CounterButton = {
-  // Шаблон потребуется отредактировать
-  template: '<button type="button"></button>',
+    template: '<button type="button" @click="onButtonClick">{{ count }}</button>',
 
-  // Компонент должен иметь входной параметр
+    // чтобы посмотреть, как работает
+    constants: {
+        incrementValue: 1,
+    },
+    //
 
-  // Компонент должен иметь модель
+    props: {
+        count: {
+            type: Number,
+            default: 0,
+        }
+    },
 
-  // Шаблон лучше держать максимально простым, а логику выносить в методы
+    model: {
+        prop: 'count',
+        event: 'increment',
+    },
+
+    computed: {
+        newCountValue() {
+            return this.count + this.$options.constants.incrementValue;
+        }
+    },
+
+    methods: {
+        onButtonClick() {
+            this.$emit('increment', this.newCountValue);
+        },
+    }
 };
