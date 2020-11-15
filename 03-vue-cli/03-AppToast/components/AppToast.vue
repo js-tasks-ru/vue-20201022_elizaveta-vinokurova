@@ -1,22 +1,8 @@
 <template>
   <div class="toasts">
     <template v-for="toast in toasts">
-      <!--            <div class="toast toast_success"-->
-      <!--                 v-if="toast.type === 'success'"-->
-      <!--                 :key="toast.id"-->
-      <!--            >-->
-      <!--                <app-icon icon="check-circle"/>-->
-      <!--                <span>{{ toast.message }}</span>-->
-      <!--            </div>-->
-      <!--            <div class="toast toast_error"-->
-      <!--                 v-if="toast.type === 'error'"-->
-      <!--                 :key="toast.id"-->
-      <!--            >-->
-      <!--                <app-icon icon="alert-circle"/>-->
-      <!--                <span>{{ toast.message }}</span>-->
-      <!--            </div>-->
-
-
+<!--      немного хрупкое решение с классом, потребует согласования пространства имен.
+ Как вариант - перенести класс в объект тоста -->
       <div class="toast"
            :class="`toast_${toast.type}`"
            :key="toast.id"
