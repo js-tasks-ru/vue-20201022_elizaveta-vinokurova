@@ -1,13 +1,30 @@
 <template>
   <div class="toasts">
-    <div class="toast toast_success">
-      <app-icon icon="check-circle" />
-      <span>Success</span>
-    </div>
-    <div class="toast toast_error">
-      <app-icon icon="alert-circle" />
-      <span>Error</span>
-    </div>
+    <template v-for="toast in toasts">
+      <!--            <div class="toast toast_success"-->
+      <!--                 v-if="toast.type === 'success'"-->
+      <!--                 :key="toast.id"-->
+      <!--            >-->
+      <!--                <app-icon icon="check-circle"/>-->
+      <!--                <span>{{ toast.message }}</span>-->
+      <!--            </div>-->
+      <!--            <div class="toast toast_error"-->
+      <!--                 v-if="toast.type === 'error'"-->
+      <!--                 :key="toast.id"-->
+      <!--            >-->
+      <!--                <app-icon icon="alert-circle"/>-->
+      <!--                <span>{{ toast.message }}</span>-->
+      <!--            </div>-->
+
+
+      <div class="toast"
+           :class="`toast_${toast.type}`"
+           :key="toast.id"
+      >
+        <app-icon :icon="toast.icon"/>
+        <span>{{ toast.message }}</span>
+      </div>
+    </template>
   </div>
 </template>
 
@@ -19,13 +36,51 @@ const DELAY = 5000;
 export default {
   name: 'AppToast',
 
-  components: { AppIcon },
+  components: {AppIcon},
+
+  data() {
+    return {
+      toasts: [],
+      key: 0,
+    }
+  },
 
   methods: {
-    error(message) {},
+    error(message) {
+      this.toasts.push({
+        type: 'error',
+        id: this.key,
+        icon: 'alert-circle',
+        message: message,
+      });
+      this.handleToast();
+    },
 
-    success(message) {},
+    success(message) {
+      this.toasts.push({
+        type: 'success',
+        id: this.key,
+        icon: 'check-circle',
+        message: message,
+      });
+      this.handleToast();
+    },
+
+    handleToast() {
+      this.key++;
+      setTimeout(() => {
+        this.toasts.shift();
+      }, DELAY);
+    }
   },
+
+  watch: {
+    toasts() {
+      if (this.toasts.length === 0) {
+        this.key = 0;
+      }
+    }
+  }
 };
 </script>
 
